@@ -21,8 +21,8 @@ class PCA:
         :return: A matrix with the centered data.
         """
 
-        self.mean = np.mean(dataset.x, axis=0)  # axis=0 means that we want to calculate the mean for each column
-        self.centered_data = dataset.x - self.mean
+        self.mean = np.mean(dataset.X, axis=0)  # axis=0 means that we want to calculate the mean for each column
+        self.centered_data = dataset.X - self.mean
         return self.centered_data
 
     def _get_components(self, dataset: Dataset) -> np.ndarray:
@@ -50,7 +50,7 @@ class PCA:
         :return: A vector with the explained variance.
         """
         # Get explained variance
-        ev_formula = self.s_matrix ** 2 / (len(dataset.x) - 1)
+        ev_formula = self.s_matrix ** 2 / (len(dataset.X) - 1)
         explained_variance = ev_formula[:self.n_components]
 
         return explained_variance
@@ -80,7 +80,7 @@ class PCA:
         # Get transformed data
         transformed_data = np.dot(self.centered_data, v_matrix)
 
-        return Dataset(transformed_data, dataset.y, dataset.features_names, dataset.label_name)
+        return Dataset(transformed_data, dataset.y, dataset.features, dataset.label)
 
     def fit_transform(self, dataset: Dataset) -> Dataset:
         """
