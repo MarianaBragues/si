@@ -41,3 +41,45 @@ def train_test_split(dataset: Dataset, test_size: float = 0.2, random_state: int
     train = Dataset(dataset.X[train_idxs], dataset.y[train_idxs], features=dataset.features, label=dataset.label)
     test = Dataset(dataset.X[test_idxs], dataset.y[test_idxs], features=dataset.features, label=dataset.label)
     return train, test
+
+def stratified_train_test_split(dataset: Dataset, test_size: float = 0.2, random_state: int = 42) -> Tuple[Dataset, Dataset]:
+    """
+    Split the dataset into stratified training and testing sets
+
+    Parameters
+    ----------
+    dataset: Dataset
+        The dataset to split
+    test_size: float
+        The proportion of the dataset to include in the test split
+    random_state: int
+        The seed of the random number generator
+
+    Returns
+    -------
+    train: Dataset
+        The training dataset
+    test: Dataset
+        The testing dataset
+    """
+    # Get unique class labels and their counts
+    unique_labels, label_counts = np.unique(dataset.target, return_counts=True)
+    # Initialize empty lists for train and test indices
+    train_indices = []
+    test_indices = []
+    for label in unique_labels:
+        # Calculate the number of test samples for the current class
+        num_test_samples = int(label_counts[label] * test_size)
+        # Get the indices for the current class
+        class_indices = np.where(dataset.target == label)[0]
+        # Shuffle and select indices for the current class and add them to the test indices
+        np.random.seed(random_state)
+        np.random.shuffle(class_indices)
+        test_indices.extend(class_indices[:num_test_samples])
+        # Add the remaining indices to the train indices
+        train_indices.extend(class_indices[num_test_samples:])
+    # Create training and testing datasets
+    train_dataset = dataset[train_indices]
+    test_dataset = dataset[test_indices]
+    # Return the training and testing datasets as a tuple
+    return train_dataset, test_dataset
