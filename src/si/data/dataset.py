@@ -197,6 +197,84 @@ class Dataset:
         X = np.random.rand(n_samples, n_features)
         y = np.random.randint(0, n_classes, n_samples)
         return cls(X, y, features=features, label=label)
+    
+### 2.1) Add a method to the Dataset class that removes all samples containing at least one null value NaN. 
+# Note that the resulting object should not contain null values in any independent feature variable. 
+# Also, note that you should update the y vector by removing entries associated with the samples to be removed. 
+# You should use only NumPy functions Method name: dropna
+    def dropna(self):
+        """
+        Removes samples with NaN values.
+        :return: Dataset
+        """
+        nan_values = np.isnan(self.X).any(axis=1)
+        self.X = self.X[~nan_values]
+
+        if self.has_label():
+            self.y = self.y[~nan_values]
+
+        return self
+    
+    
+### 2.2) Add a method to the Dataset class that replaces all null values with another value or the mean or median of the 
+# feature/variable. Note that the resulting object should not contain null values in any independent feature/variable. 
+# You should use only NumPy functions. Method name: fillna
+    def fillna(self, values: list[float]):
+        """
+        Replaces all null values with another value or the mean or median of the feature/variable
+        
+        Parameters:
+        -----------
+        values: list of medians or means to use as replacements for NaN values
+        
+        Return:
+        Modified Dataset 
+        """
+        if not all(isinstance(value, (int, float)) for value in values):
+            raise ValueError("value could be only float")
+        num_columns = self.X.shape[1]
+
+        if len(values) < num_columns:
+            raise ValueError("values have at least as many values as columns in X")
+
+        if not np.array_equal(values, self.get_mean()) and not np.array_equal(values, self.get_median()):
+            raise ValueError("values are the array of means or medians of the variables")
+
+        for cols in range(num_columns):
+            col_values = self.X[:, cols]
+            nan_v = np.isnan(col_values)
+
+            if np.any(nan_v):
+                replace_value = values[cols]
+                col_values[nan_v] = replace_value
+                self.X[:, cols] = col_values
+
+        return self
+    
+
+### 2.3) Add a method to the Dataset class that removes a sample by its index. Note that you should also update the 
+# y vector by removing the entry associated with the sample to be removed. You should use only NumPy functions. 
+# Method name: remove_by_index
+    def remove_from_index(self, index: int):
+            """
+            Removes a sample by index
+            
+            Parameters:
+            -----------
+            index: integer corresponding to the sample to remove
+            
+            Return:
+            Modified Dataset 
+            """
+            if index < 0 or index >= len(self.X):
+                raise ValueError("Index is not valid, it is out of bounds")
+
+            self.X = np.delete(self.X, index, axis=0)
+
+            if self.has_label():
+                self.y = np.delete(self.y, index)
+
+            return self
 
 
 if __name__ == '__main__':
