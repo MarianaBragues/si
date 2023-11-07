@@ -4,88 +4,93 @@ from si.data.dataset import Dataset
 
 
 class PCA:
-    def __init__(self, n_components: int = 2):
+    """
+    PCA is a linear algebra technique used to reduce the dimensions of the dataset. 
+    The PCA to be implemented must use the Singular Value Decomposition (SVD) linear algebra technique.
+    """
+    def __init__(self, n_components: int):
         """
         Initializes the PCA.
-        :param n_components: Number of components to keep.
+
+        Parameters
+        ---------- 
+        n_components: int
+            Number of components to keep.
+        
+        Estimated Parameters
+        --------------------
+        mean:
+            mean of the samples
+        components:
+            the principal components (the unitary matrix of eigenvectors)
+        explained_variance:
+            explained variance (diagonal matrix of eigenvalues)
         """
         self.n_components = n_components
         self.mean = None
         self.components = None
         self.explained_variance = None
 
-    def _get_centered_data(self, dataset: Dataset) -> np.ndarray:
+
+    def fit(self, dataset: Dataset) -> np.ndarray:
         """
-        Centers the dataset.
-        :param dataset: Dataset object.
-        :return: A matrix with the centered data.
+        Estimates the mean, principal components and explained variance.
+
+        Parameters
+        ----------
+        dataset: Dataset
+            A labeled dataset
+        
+        Returns
+            self
         """
+        #centering the data
+        self.mean = np.mean(dataset.X, axis = 0)
+        dataset = dataset.X - self.mean
 
-        self.mean = np.mean(dataset.X, axis=0)  # axis=0 means that we want to calculate the mean for each column
-        self.centered_data = dataset.X - self.mean
-        return self.centered_data
+        #calculate of SVD
+        self.U,self.S,self.V = np.linalg.svd(dataset, full_matrices=False) 
+        
+        #infer the Principal Components
+        self.components = self.V[:self.n_components]
 
-    def _get_components(self, dataset: Dataset) -> np.ndarray:
-        """
-        Calculates the components of the dataset.
-        :param dataset:
-        :return: A matrix with the components.
-        """
-
-        # Get centered data
-        centered_data = self._get_centered_data(dataset)
-
-        # Get single value decomposition
-        self.u_matrix, self.s_matrix, self.v_matrix_t = np.linalg.svd(centered_data, full_matrices=False)
-
-        # Get principal components
-        self.components = self.v_matrix_t[:, :self.n_components]  # get the first n_components columns
-
-        return self.components
-
-    def _get_explained_variance(self, dataset: Dataset) -> np.ndarray:
-        """
-        Calculates the explained variance.
-        :param dataset: Dataset object.
-        :return: A vector with the explained variance.
-        """
-        # Get explained variance
-        ev_formula = self.s_matrix ** 2 / (len(dataset.X) - 1)
-        explained_variance = ev_formula[:self.n_components]
-
-        return explained_variance
-
-    def fit(self, dataset: Dataset):
-        """
-        Calculates the mean, the components and the explained variance.
-        :return: Dataset.
-        """
-
-        self.components = self._get_components(dataset)
-        self.explained_variance = self._get_explained_variance(dataset)
+        #infer the Explained Variance
+        n_samples = dataset.shape[0]
+        EV = (self.S ** 2)/(n_samples - 1)
+        self.explained_variance = EV[:self.n_components]
 
         return self
-
-    def transform(self, dataset: Dataset) -> Dataset:
+    
+    def transform(self, dataset: Dataset) -> np.ndarray:
         """
-        Transforms the dataset.
-        :return: Dataset object.
+        Transforms dataset by calculating the reduction of X to the principal components.
+
+        Parameters
+        ----------
+        dataset: Dataset
+            A labeled dataset
+        
+        Returns
+            Reduced Dataset
         """
-        if self.components is None:
-            raise Exception("You must fit the PCA before transform the dataset.")
+        #centering the data
+        dataset = dataset.X - self.mean
+        
+        #get transposed V matrix
+        v_matrix = self.components.T
 
-        # Get transposed V matrix
-        v_matrix = self.v_matrix_t.T
+        #get transformed data
+        reduced_data = np.dot(dataset, v_matrix)
 
-        # Get transformed data
-        transformed_data = np.dot(self.centered_data, v_matrix)
+        return reduced_data
 
-        return Dataset(transformed_data, dataset.y, dataset.features, dataset.label)
 
     def fit_transform(self, dataset: Dataset) -> Dataset:
         """
-        Calculates the mean, the components and the explained variance and transforms the dataset.
-        :return: Dataset object.
+        Runs fit and the transform
+
+        Return: 
+            Dataset object
         """
         self.fit(dataset)
         return self.transform(dataset)
