@@ -79,7 +79,7 @@ class KNNRegressor:
         # Sorts the classes with the highest mean
         return match_class_mean
     
-    def predict(self, dataset: Dataset, Y_test) -> np.ndarray:
+    def predict(self, dataset: Dataset) -> np.ndarray:
         """
         It predicts the classes of the given dataset
 
