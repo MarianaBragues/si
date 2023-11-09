@@ -52,7 +52,7 @@ def randomized_search_cv(model,
         score = k_fold_cross_validation(model=model, dataset=dataset, scoring=scoring, cv=cv, test_size=test_size)
 
         # stores the hyperparameter combination and the obtained scores
-        scores['hyperparameters'].append(parameters)
+        scores['parameters'].append(parameters)
         scores['train'].append(score['train'])
         scores['test'].append(score['test'])
 
