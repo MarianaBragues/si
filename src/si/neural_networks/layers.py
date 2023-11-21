@@ -210,3 +210,55 @@ class DenseLayer(Layer):
             The shape of the output of the layer.
         """
         return (self.n_units,)
+    
+
+class Dropout(Layer):
+    """
+    A dropout layer in NNs is a regularization technique where a random set of neurons is temporarily ignored (dropped out)
+    during training, helping prevent overfitting by promoting robustness and generalization in the model
+    """
+
+    def __init__(self, probability: float):
+        """
+        Initialize the dropout layer.
+
+        Parameters
+        ----------
+        probability: float
+            the dropout rate, between 0 and 1;
+        """
+        super().__init__()
+        self.probability = probability
+        self.mask = None
+
+    def forward_propagation(self, input: np.ndarray, training: bool = True) -> np.ndarray:
+        """
+        Parameters
+        ----------
+        input: array
+            input_array
+
+        training: bool
+            boolean of whether we are in training or inference mode
+        """
+        if training:
+            scaling_factor = 1 / (1 - self.probability)
+            self.mask = np.random.binomial(1, 1 - self.probability, size=input.shape)
+            return input * self.mask * scaling_factor
+        else:
+            return input
+
+    def backward_propagation(self, output_error: np.ndarray) -> np.ndarray:
+        """
+        Parameters
+        ----------
+        output_error:  array
+            the output error of the layer
+        """
+        return output_error * self.mask
+
+    def output_shape(self, input_shape: tuple) -> tuple:
+        return input_shape
+
+    def parameters(self) -> int:
+        return 0  
