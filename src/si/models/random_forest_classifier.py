@@ -36,8 +36,7 @@ class RandomForestClassifier:
     trees: list
         the trees of the random forest and respective features used for training (initialized as an empty list)
     """
-
-    def init(self, n_estimators=100, max_features=None, min_sample_split=2, max_depth=None, mode='gini', seed=None):
+    def init(self, n_estimators = int, max_features=None, min_sample_split=2, max_depth=None, mode = 'gini', seed=None):
         self.n_estimators = n_estimators
         self.max_features = max_features
         self.min_sample_split = min_sample_split
@@ -79,12 +78,13 @@ class RandomForestClassifier:
             X_bootstrap = dataset.X[sample_indices][:, feature_indices]
             y_bootstrap = dataset.y[sample_indices]
 
-            tree = DecisionTreeClassifier(max_depth=self.max_depth)
-            tree.train(X_bootstrap, y_bootstrap)
+            tree = DecisionTreeClassifier(min_sample_split=self.min_sample_split,
+                                          max_depth=self.max_depth,
+                                          mode=self.mode)
+            tree.fit(X_bootstrap, y_bootstrap)
             self.trees.append((feature_indices, tree))
 
         return self
-
 
     def predict(self, dataset: Dataset) -> np.array:
         """
@@ -100,23 +100,17 @@ class RandomForestClassifier:
         predictions: np.array
             The predictions of the dataset
         """
-        self.dataset = dataset
+        #self.dataset = dataset
         all_predictions = []
 
-        for feature_indices, tree in self.trees:
-            X_subset = dataset.X[:, feature_indices]
-            predictions = tree.predict(X_subset)
+        for _, tree in self.trees:
+            X_subset = dataset.X[:, tree.feature_indices]
+            predictions = tree.predict(Dataset(X=X_subset))
             all_predictions.append(predictions)
 
         all_predictions = np.array(all_predictions).T
-        final_predictions = []
-
-        for predictions in all_predictions:
-            most_common = Counter(predictions).most_common(1)[0][0]
-            final_predictions.append(most_common)
-
-        return np.array(final_predictions)
-
+        return np.array([np.argmax(np.bincount(sample)) for sample in predictions])
+    
 
     def score(self, dataset: Dataset) -> float:
         """
@@ -134,3 +128,4 @@ class RandomForestClassifier:
         """
         predictions = self.predict(dataset)
         return accuracy(dataset.y, predictions)
+    
