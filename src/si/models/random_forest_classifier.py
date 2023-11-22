@@ -36,7 +36,7 @@ class RandomForestClassifier:
     trees: list
         the trees of the random forest and respective features used for training (initialized as an empty list)
     """
-    def __init__(self, n_estimators, max_features=None, min_sample_split=2, max_depth=None, mode = 'gini', seed=None):
+    def __init__(self, n_estimators=100, max_features=None, min_sample_split=2, max_depth=None, mode = 'gini', seed=None):
         self.n_estimators = n_estimators
         self.max_features = max_features
         self.min_sample_split = min_sample_split
