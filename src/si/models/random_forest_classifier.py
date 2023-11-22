@@ -78,11 +78,12 @@ class RandomForestClassifier:
             X_bootstrap = dataset.X[sample_indices][:, feature_indices]
             y_bootstrap = dataset.y[sample_indices]
 
-            tree = DecisionTreeClassifier(max_depth=self.max_depth)
+            tree = DecisionTreeClassifier(max_depth=self.max_depth, mode=self.mode, min_sample_split=self.min_sample_split)
             tree.fit(X_bootstrap, y_bootstrap)
             self.trees.append((feature_indices, tree))
 
         return self
+    
 
     def predict(self, dataset: Dataset) -> np.array:
         """
