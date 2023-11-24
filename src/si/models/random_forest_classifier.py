@@ -1,7 +1,6 @@
 import numpy as np
 from si.data.dataset import Dataset
 from si.models.decision_tree_classifier import Node, DecisionTreeClassifier
-from collections import Counter
 from si.metrics.accuracy import accuracy
 
 class RandomForestClassifier:
@@ -47,10 +46,38 @@ class RandomForestClassifier:
 
     
     def set_random_seed(self):
+        """
+        Set a random seed for NumPy
+
+        Returns
+        -------
+        A random value
+        """
         if self.seed is not None:
             np.random.seed(self.seed)
 
-    
+    def get_bootstrap_dataset(self, dataset: Dataset):
+        """
+        Generate a bootstrap dataset with randomly sampled instances and features from the original dataset. 
+        
+        Parameters
+        ----------
+        dataset: Dataset
+            The dataset to fit the model to
+
+        Returns
+        -------
+        self: 
+            The fitted model
+        """
+        n_samples, n_features = dataset.shape()
+
+        indices = np.random.choice(n_samples, n_samples, replace=True)
+        features = np.random.choice(n_features, self.max_features, replace=False)
+        
+        return Dataset(X=dataset.X[indices][:, features], y=dataset.y[indices])
+
+
     def fit(self, dataset: Dataset) -> 'RandomForestClassifier':
         """
         Train the decision trees of the random forest
@@ -65,22 +92,20 @@ class RandomForestClassifier:
         self: RandomForest
             The fitted model
         """
-        self.dataset = dataset
-        n_samples, n_features = dataset.X.shape
         self.set_random_seed()
+        n_features = dataset.shape()[1]
+        self.max_features = int(np.sqrt(n_features)) if self.max_features is None else self.max_features
 
-        if self.max_features is None:
-            self.max_features = int(np.sqrt(n_features))
+        if self.max_depth is None:
+            self.max_depth = 10
 
         for _ in range(self.n_estimators):
-            sample_indices = np.random.choice(n_samples, size=n_samples, replace=True)
-            feature_indices = np.random.choice(n_features, size=self.max_features, replace=False)
-            X_bootstrap = dataset.X[sample_indices][:, feature_indices]
-            y_bootstrap = dataset.y[sample_indices]
-
-            tree = DecisionTreeClassifier(max_depth=self.max_depth, mode=self.mode, min_sample_split=self.min_sample_split)
-            tree.fit(X_bootstrap, y_bootstrap)
-            self.trees.append((feature_indices, tree))
+            bootstrap_dataset = self.get_bootstrap_dataset(dataset)
+            tree = DecisionTreeClassifier(min_sample_split=self.min_sample_split,
+                                          max_depth=self.max_depth,
+                                          mode=self.mode)
+            tree.fit(bootstrap_dataset)
+            self.trees.append((bootstrap_dataset.features, tree))
 
         return self
     
@@ -103,12 +128,12 @@ class RandomForestClassifier:
         all_predictions = []
 
         for _, tree in self.trees:
-            X_subset = dataset.X[:, tree.feature_indices]
+            X_subset = dataset.X[:, tree.feature_idx]
             predictions = tree.predict(Dataset(X=X_subset))
             all_predictions.append(predictions)
 
         all_predictions = np.array(all_predictions).T
-        return np.array([np.argmax(np.bincount(sample)) for sample in predictions])
+        return np.array([np.argmax(np.bincount(sample)) for sample in all_predictions])
     
 
     def score(self, dataset: Dataset) -> float:
