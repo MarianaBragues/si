@@ -127,13 +127,26 @@ class RandomForestClassifier:
         #self.dataset = dataset
         all_predictions = []
 
-        for _, tree in self.trees:
-            X_subset = dataset.X[:, tree.feature_idx]
+        for features_used, tree in self.trees:
+            X_subset = dataset.X[:, features_used]
             predictions = tree.predict(Dataset(X=X_subset))
             all_predictions.append(predictions)
 
         all_predictions = np.array(all_predictions).T
         return np.array([np.argmax(np.bincount(sample)) for sample in all_predictions])
+
+        
+        
+        
+        #all_predictions = []
+
+        #for _, tree in self.trees:
+        #    X_subset = dataset.X[:, tree.feature_idx]
+        #    predictions = tree.predict(Dataset(X=X_subset))
+        #    all_predictions.append(predictions)
+
+        #all_predictions = np.array(all_predictions).T
+        #return np.array([np.argmax(np.bincount(sample)) for sample in all_predictions])
     
 
     def score(self, dataset: Dataset) -> float:
