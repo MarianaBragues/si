@@ -31,7 +31,7 @@ class StackingClassifier:
         self.final_model = final_model
     
 
-    def fit(self, dataset: Dataset) -> 'StackingClassifier':
+    def fit(self, dataset: Dataset):
         """
         Train the ensemble models
 
@@ -46,12 +46,12 @@ class StackingClassifier:
             The fitted model
         """
         for md in self.model:
-            md.fit(dataset.X, dataset.y)
+            md.fit(dataset)
          
-        predictions = []
-        for md in self.model:
-            predictions.append(md.predict(dataset.X))
-        predictions = np.vstack(predictions).T
+        predictions = np.array([md.predict(dataset) for md in self.model]).T
+
+        self.final_model.fit(Dataset(X=predictions, y=dataset.y))
+        self.final_model_trained = True
 
         self.final_model.fit(predictions, dataset.y)
         
@@ -95,6 +95,6 @@ class StackingClassifier:
             The accuracy of the model
         """
 
-        predictions = self.predict(dataset.X)
-        accuracy_score = np.mean(predictions == dataset.y)
+        predictions = self.predict(dataset)
+        accuracy_score = accuracy(dataset.y, predictions)
         return accuracy_score
