@@ -128,7 +128,8 @@ class RandomForestClassifier:
         all_predictions = []
 
         for features_used, tree in self.trees:
-            X_subset = dataset.X[:, features_used]
+            feature_indices = list(features_used)
+            X_subset = dataset.X[:, feature_indices]
             predictions = tree.predict(Dataset(X=X_subset))
             all_predictions.append(predictions)
 
