@@ -128,15 +128,16 @@ class RandomForestClassifier:
         all_predictions = []
 
         for features_used, tree in self.trees:
-            feature_indices = list(features_used)
-            X_subset = dataset.X[:, feature_indices]
+            feature_mask = np.zeros(dataset.X.shape[1], dtype=bool)
+            feature_mask[list(features_used)] = True
+    
+            X_subset = dataset.X[:, feature_mask]
             predictions = tree.predict(Dataset(X=X_subset))
             all_predictions.append(predictions)
 
         all_predictions = np.array(all_predictions).T
         return np.array([np.argmax(np.bincount(sample)) for sample in all_predictions])
-
-        
+      
         
         
         #all_predictions = []
