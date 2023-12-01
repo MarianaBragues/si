@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List
 from si.model_selection.split import train_test_split
 from si.data.dataset import Dataset
 from si.metrics.accuracy import accuracy
@@ -17,7 +18,7 @@ class StackingClassifier:
     final_model:
         the model to make the final predictions
     """
-    def __init__(self, model, final_model):
+    def __init__(self, models: List, final_model):
         """
         Parameters
         ----------
@@ -27,8 +28,9 @@ class StackingClassifier:
         final_model:
             the model to make the final predictions
         """
-        self.model = model
+        self.models = models
         self.final_model = final_model
+        self.final_model_trained = False
     
 
     def fit(self, dataset: Dataset):
@@ -48,7 +50,7 @@ class StackingClassifier:
         for md in self.model:
             md.fit(dataset)
          
-        predictions = np.array([md.predict(dataset) for md in self.model]).T
+        predictions = np.array([md.predict(dataset) for md in self.models]).T
 
         self.final_model.fit(Dataset(X=predictions, y=dataset.y))
         self.final_model_trained = True
@@ -71,15 +73,15 @@ class StackingClassifier:
         predictions: np.ndarray
             The predictions of the model
         """
-        model_predictions = []
-        for md in self.model:
-            model_predictions.append(md.predict(dataset.X))
-        model_predictions = np.vstack(model_predictions).T
+        if not self.final_model_trained:
+            raise ValueError("Final model has not been trained.")
 
-        final_predictions = self.final_model.predict(model_predictions)
+        initial_predictions = np.array([model.predict(dataset) for model in self.models]).T
+        final_predictions = self.final_model.predict(Dataset(X=initial_predictions))
 
         return final_predictions
     
+          
     def score(self, dataset: Dataset) -> float:
         """
         Computes the accuracy between predicted and real labels
