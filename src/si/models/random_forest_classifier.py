@@ -150,6 +150,5 @@ class RandomForestClassifier:
         random_forest: float
             The Mean Square Error of the model
         """
-        predictions = self.predict(dataset)
-        return accuracy(dataset.y, predictions)
+        return accuracy(dataset.y, self.predict(dataset))
     
