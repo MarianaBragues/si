@@ -1,5 +1,7 @@
-import numpy as np
+import numpy as np #importação do NumPy
 
+#define a função manhattan_distance, que calcula a distância de Manhattan entre um ponto x e um conjunto de pontos y.
+#x e y são matrizes NumPy (np.ndarray)
 
 def manhattan_distance(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """
@@ -19,15 +21,18 @@ def manhattan_distance(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     np.ndarray
         an array containing the distances between X and the various samples in Y.
     """
-    distances = []
+    distances = [] #cria uma lista vazia "distances"
     
-    for sample in y:
-        distance = sum(abs(xi - yi) for xi, yi in zip(x, sample))
-        distances.append(distance)
+    for sample in y: #para cada amostra em y:
+        distance = sum(abs(xi - yi) for xi, yi in zip(x, sample)) #cria a variável distance onde calcula a distância de 
+        #Manhattan entre x e a amostra atual percorrendo coordenada por coordenada (zip(x, sample)) e somando as diferenças
+        #absolutas.
+        distances.append(distance) #adiciona os resultados calculados anteriores 
     
-    return distances
+    return distances #retorna uma matriz NumPy que contém as distâncias entre x e as várias amostras em y
 
 
+#Testes:
 if __name__ == '__main__':
     # test manhattan_distance
     x = np.array([1, 2, 3])
