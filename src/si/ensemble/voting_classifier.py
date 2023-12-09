@@ -1,5 +1,5 @@
+#importação de packages necessários:
 import numpy as np
-
 from si.data.dataset import Dataset
 from si.metrics.accuracy import accuracy
 
@@ -17,6 +17,7 @@ class VotingClassifier:
     ----------
     """
     def __init__(self, models):
+        #definir o construtor
         """
         Initialize the ensemble classifier.
 
@@ -43,6 +44,8 @@ class VotingClassifier:
         self : VotingClassifier
             The fitted model.
         """
+        #para cada modelo na lista models, a função fit é chamada. Cada modelo individual (que deve possuiu um método fit) 
+        #receberá o dataset de treino para realizar o seu próprio ajuste (fit)
         for model in self.models:
             model.fit(dataset)
 
@@ -82,8 +85,15 @@ class VotingClassifier:
             labels, counts = np.unique(pred, return_counts=True)
             return labels[np.argmax(counts)]
 
+        #é criada uma matriz predictions que armazena as previsões de cada modelo para o dataset de teste, usa uma 
+        #compreensão de lista para iterar sobre cada modelo em models e coletar as suas previsões usando model.predict()
+        #A matriz resultante é transposta para que cada linha corresponda às previsões de um único exemplo de teste:
         predictions = np.array([model.predict(dataset) for model in self.models]).transpose()
+
+        #utilizando a função _get_majority_vote, é aplicada ao longo do eixo 1 (axis=1) da matriz predictions, onde a 
+        #função _get_majority_vote será aplicada a cada linha da matriz para obter o voto majoritário de todas as previsões:
         return np.apply_along_axis(_get_majority_vote, axis=1, arr=predictions)
+
 
     def score(self, dataset: Dataset) -> float:
         """
@@ -99,7 +109,8 @@ class VotingClassifier:
         score : float
             Mean accuracy
         """
-        return accuracy(dataset.y, self.predict(dataset))
+        return accuracy(dataset.y, self.predict(dataset)) #devolve a precisão média das labels previstas em relação às 
+        #labels reais dos dados de teste, utilizando o método accuracy
 
 
 if __name__ == '__main__':
