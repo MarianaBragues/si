@@ -36,34 +36,3 @@ def randomized_search_cv(model,
 
     return results #devolve o dicionário results contendo as melhores combinações de hiperparâmetros e os scores correspondentes
 
-
-#Tests:
-if __name__ == '__main__':
-    #criar um conjunto de dados de exemplo
-    from si.models.logistic_regression import LogisticRegression
-    from si.metrics.rmse import rmse
-    np.random.seed(42)
-    X = np.random.rand(100, 3)  #matriz de 100 amostras e 3 features
-    theta_true = np.array([3, 1.5, -2])  #coeficientes verdadeiros
-    noise = 0.1 * np.random.randn(100)  
-    y = X.dot(theta_true) + noise  #gerar os valores y usando os coeficientes e adicionando noise
-
-    #criar um Dataset
-    dataset = Dataset(X, y)
-
-    #definir o modelo (LogisticRegression) para a procura aleatória de hiperparâmetros
-    model = LogisticRegression()
-
-    #define a grade de hiperparâmetros para a procura
-    hyperparameter_grid = {
-        'learning_rate': (0.01, 0.1, 0.5),
-        'epochs': (100, 200, 300),
-        'batch_size': (32, 64, 128)
-    }
-
-    #realiza a procura aleatória de hiperparâmetros
-    search_results = randomized_search_cv(model, dataset, hyperparameter_grid, scoring=rmse, cv=5, n_iter=10)
-
-    #exibe os resultados da procura
-    print("Best Hyperparameters:", search_results['best_hyperparameters'])
-    print("Best Score (MSE):", search_results['best_score'])
