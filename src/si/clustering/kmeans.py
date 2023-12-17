@@ -60,8 +60,12 @@ class KMeans:
         dataset: Dataset
             Dataset object.
         """
-        seeds = np.random.permutation(dataset.shape()[0])[:self.k]
-        self.centroids = dataset.X[seeds]
+        seeds = np.random.permutation(dataset.shape()[0])[:self.k] #gera uma permutação aleatória de uma sequência de 
+        #números. dataset.shape[0] retorna o número de linhas (ou itens) no conjunto de dados, então dataset.shape[0] 
+        #representa o número de amostras no dataset. Selecionar os primeiros self.k elementos da permutação aleatória. 
+        #Ou seja, o código está pega nos primeiros k índices gerados pela permutação aleatória.
+        self.centroids = dataset.X[seeds] #os centróides iniciais são escolhidos aleatoriamente a partir do conjunto de 
+        #dados para iniciar o processo de clustering.
 
     def _get_closest_centroid(self, sample: np.ndarray) -> np.ndarray:
         """
@@ -77,8 +81,10 @@ class KMeans:
         np.ndarray
             The closest centroid to each data point.
         """
-        centroids_distances = self.distance(sample, self.centroids)
-        closest_centroid_index = np.argmin(centroids_distances, axis=0)
+        centroids_distances = self.distance(sample, self.centroids) #é uma matriz de distâncias entre a sample e todos os 
+        #centróides. Cada coluna representa a distância da sample a um centróide específico.
+        closest_centroid_index = np.argmin(centroids_distances, axis=0) #armazena os índices dos centróides mais próximos
+        #para cada ponto de dados.
         return closest_centroid_index
 
     def fit(self, dataset: Dataset) -> 'KMeans':
@@ -143,8 +149,8 @@ class KMeans:
         np.ndarray
             Distances between each sample and the closest centroid.
         """
-        return self.distance(sample, self.centroids)
-
+        return self.distance(sample, self.centroids) #devolve a distância entre a sample e os centróides
+    
     def transform(self, dataset: Dataset) -> np.ndarray:
         """
         It transforms the dataset.
@@ -160,7 +166,9 @@ class KMeans:
         np.ndarray
             Transformed dataset.
         """
-        centroids_distances = np.apply_along_axis(self._get_distances, axis=1, arr=dataset.X)
+        centroids_distances = np.apply_along_axis(self._get_distances, axis=1, arr=dataset.X) #é uma matriz resultante que
+        #armazena as distâncias entre cada amostra e os centróides mais próximos. Cada linha dessa matriz corresponde às 
+        #distâncias de uma amostra em relação aos centróides.
         return centroids_distances
 
     def fit_transform(self, dataset: Dataset) -> np.ndarray:
@@ -177,8 +185,11 @@ class KMeans:
         np.ndarray
             Transformed dataset.
         """
-        self.fit(dataset)
-        return self.transform(dataset)
+        self.fit(dataset) #chama o método fit para ajustar os centróides utilizando o conjunto de dados fornecido. Inicia 
+        #os centróides com base nas amostras do conjunto de dados
+        return self.transform(dataset) #chama o método transform para realizar a transformação dos dados após o ajuste. 
+        #Calcula as distâncias entre cada amostra e os centróides mais próximos, devolvendo o conjunto de dados 
+        #transformado com base nessas distâncias
 
     def predict(self, dataset: Dataset) -> np.ndarray:
         """
@@ -194,7 +205,9 @@ class KMeans:
         np.ndarray
             Predicted labels.
         """
-        return np.apply_along_axis(self._get_closest_centroid, axis=1, arr=dataset.X)
+        return np.apply_along_axis(self._get_closest_centroid, axis=1, arr=dataset.X) #devolve um array de índices ou labels 
+        #que indicam o centróide mais próximo para cada amostra no conjunto de dados
+        #self._get_closest_centroid é o método que determina o centróide mais próximo para uma dada amostra
 
     def fit_predict(self, dataset: Dataset) -> np.ndarray:
         """
@@ -210,8 +223,10 @@ class KMeans:
         np.ndarray
             Predicted labels.
         """
-        self.fit(dataset)
-        return self.predict(dataset)
+        self.fit(dataset) #chama o método fit para ajustar os centróides utilizando o conjunto de dados fornecido. 
+        return self.predict(dataset) #chama o método predict para prever as labels para as amostras do conjunto de dados
+        #após o ajuste. Isto é realizado utilizando os centróides previamente ajustados para determinar as labels dos 
+        #clusters para cada amostra
 
 
 if __name__ == '__main__':
